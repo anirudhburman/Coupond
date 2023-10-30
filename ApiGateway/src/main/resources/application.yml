@@ -1,0 +1,35 @@
+server:
+  port: 8080
+
+eureka:
+  instance:
+    hostname: localhost
+
+spring:
+  application:
+    name: api-gateway
+    
+  cloud:
+    gateway:
+      default-filters:
+      - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+      globalcors:
+        cors-configurations:
+          '[/**]':
+           allowedOrigins: "*"
+           allowedMethods: "*"
+           allowedHeaders: "*"
+      routes:
+      - id: user-service
+        uri: lb://user-auth-service
+        predicates:
+          - Path=/user/**
+      - id: coupon-service
+        uri: lb://user-auth-service
+        predicates:
+          - Path=/coupon/**
+      - id: login-service
+        uri: lb://user-auth-service
+        predicates:
+          - Path=/app/**
+        

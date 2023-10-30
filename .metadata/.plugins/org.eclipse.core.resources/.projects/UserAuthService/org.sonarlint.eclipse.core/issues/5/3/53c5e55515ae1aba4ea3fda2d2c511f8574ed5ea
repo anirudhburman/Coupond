@@ -1,0 +1,26 @@
+
+a
+java:S1452"&Remove usage of generic wildcard type.(ÁÊÑÿÿÿÿÿ8ÜÍªÕ¶1H±RCRITICALZ
+CODE_SMELL
+i
+java:S1128"1Remove this unused import 'java.util.Collection'.(¹ÉÐšùÿÿÿÿ8ÜÍªÕ¶1H²RMINORZ
+CODE_SMELL
+p
+java:S1128"8Remove this unused import 'java.util.stream.Collectors'.(Óóº´úÿÿÿÿ8ÜÍªÕ¶1H´RMINORZ
+CODE_SMELL
+¤
+java:S1128"lRemove this unused import 'org.springframework.security.authentication.UsernamePasswordAuthenticationToken'.(ÖÆ„Ùüÿÿÿÿ8ÜÍªÕ¶1H¶RMINORZ
+CODE_SMELL
+€
+java:S1128	"MRemove this unused import 'org.springframework.security.core.Authentication'.(ñýÓ“8ÜÍªÕ¶1H¸RMINORZ
+CODE_SMELL
+‚
+java:S1128
+"ORemove this unused import 'org.springframework.security.core.GrantedAuthority'.(½Á±ÿ8ÜÍªÕ¶1HºRMINORZ
+CODE_SMELL
+
+java:S1128"\Remove this unused import 'org.springframework.security.core.context.SecurityContextHolder'.(ŒÄæë8ÜÍªÕ¶1H¼RMINORZ
+CODE_SMELL
+q
+java:S1128">Remove this unused import 'com.coupond.response.JSONResponse'.(—×ÿ›8ÜÍªÕ¶1H¾RMINORZ
+CODE_SMELL

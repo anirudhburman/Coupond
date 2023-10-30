@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename local variable &apos;updatedUser&apos; in &apos;com.coupond.service.UserServiceImpl.updateUser(...)&apos; to &apos;foundUser&apos;&#x0D;&#x0A;- Original project: &apos;UserAuthService&apos;&#x0D;&#x0A;- Original element: &apos;com.coupond.service.UserServiceImpl.updateUser(UpdateUserDto).updatedUser&apos;&#x0D;&#x0A;- Renamed element: &apos;updatedUser&apos;&#x0D;&#x0A;- Update references to refactored element" description="Rename local variable &apos;updatedUser&apos;" id="org.eclipse.jdt.ui.rename.local.variable" input="/src\/main\/java=/optional=/true=/=/maven.pomderived=/true=/&lt;com.coupond.service{UserServiceImpl.java[UserServiceImpl~updateUser~QUpdateUserDto;@updatedUser!7325!7427!7330!7340!QUser;!0!false" name="foundUser" references="true" stamp="1698063097730" version="1.0"/>
+</session>

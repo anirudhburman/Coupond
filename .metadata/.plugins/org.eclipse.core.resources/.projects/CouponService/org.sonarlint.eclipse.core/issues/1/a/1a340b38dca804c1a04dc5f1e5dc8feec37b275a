@@ -1,0 +1,13 @@
+
+a
+java:S2209!"5Change this instance-reference to a static reference.(¸ãüÉHÊRMAJORZ
+CODE_SMELL
+`
+java:S1128"/Remove this unused import 'java.util.Optional'.(¨˜ëİüÿÿÿÿHÌRMINORZ
+CODE_SMELL
+p
+java:S18549"8Remove this useless assignment to local variable "coup".(ôÅÛğüÿÿÿÿ8ƒíÈµ³1HÙRMAJORZ
+CODE_SMELL
+a
+java:S14819")Remove this unused "coup" local variable.(ôÅÛğüÿÿÿÿ8ƒíÈµ³1HÚRMINORZ
+CODE_SMELL

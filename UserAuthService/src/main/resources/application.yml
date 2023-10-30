@@ -1,0 +1,25 @@
+server:
+  port: 9092
+  
+spring:
+  application:
+    name: User-Auth-Service
+    
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: couponuserdb
+
+eureka:
+  instance:
+    hostname: localhost
+    
+logging:
+  level:
+    org:
+      springframework:
+        data:
+          mongodb:
+            core:
+              MongoTemplate: DEBUG

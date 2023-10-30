@@ -1,0 +1,63 @@
+package com.coupond.exceptionhandler;
+
+import java.time.LocalDate;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+import com.coupond.exception.CouponAlreadyExistsException;
+import com.coupond.exception.ResourceNotFoundException;
+
+import lombok.extern.slf4j.Slf4j;
+
+@RestControllerAdvice
+@Slf4j
+public class CouponExceptionHandler extends ResponseEntityExceptionHandler {
+	
+	@ExceptionHandler(ResourceNotFoundException.class)
+	public ResponseEntity<ExceptionResponse> handleCouponNotFoundException(ResourceNotFoundException ex, WebRequest request) {
+		ExceptionResponse exceptionResponse = new ExceptionResponse(LocalDate.now(), "Coupon not found!",
+				request.getDescription(false), "Not Found");
+		log.error("Coupon not found!\n" + ex.getMessage());
+		return new ResponseEntity<>(exceptionResponse, HttpStatus.NOT_FOUND);
+	}
+	
+	@ExceptionHandler(CouponAlreadyExistsException.class)
+	public ResponseEntity<ExceptionResponse> handleCouponAlreadyExists(CouponAlreadyExistsException ex, WebRequest request) {
+		ExceptionResponse exceptionResponse = new ExceptionResponse(LocalDate.now(), "Coupon already exists!",
+				request.getDescription(false), "Already Exists");
+		log.error("Coupon already exists!\n" + ex.getMessage());
+		return new ResponseEntity<>(exceptionResponse, HttpStatus.NOT_ACCEPTABLE);
+	}
+	
+	@ExceptionHandler(Exception.class)
+	public ResponseEntity<ExceptionResponse> handleAllExceptions(Exception ex, WebRequest request) {
+		ExceptionResponse exceptionResponse = new ExceptionResponse(LocalDate.now(), "Something went wrong",
+				request.getDescription(false), "Internal Server Error");
+		log.error("An exception occurred:", ex);
+		return new ResponseEntity<>(exceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+	
+	@Override
+	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
+
+			HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+		StringBuilder details = new StringBuilder();
+		for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+			details.append(error.getField()).append(": ").append(error.getDefaultMessage()).append(". ");
+		}
+		ExceptionResponse exceptionResponse = new ExceptionResponse(LocalDate.now(), "Validation fails",
+				details.toString(), "Bad Request");
+		log.error("Validation fails:", ex);
+
+		return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
+	}
+}

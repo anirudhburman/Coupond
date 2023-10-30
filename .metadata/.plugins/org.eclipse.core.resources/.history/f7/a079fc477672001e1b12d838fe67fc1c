@@ -1,0 +1,152 @@
+package com.coupond.exceptionHandler;
+
+import java.time.LocalDate;
+
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+import com.coupond.exception.ResourceAlreadyExistsException;
+import com.coupond.exception.ResourceNotFoundException;
+import com.coupond.exception.UserAlreadyExistsException;
+import com.coupond.exception.UserNotFoundException;
+import com.coupond.exception.ValidationFailedException;
+
+import lombok.extern.slf4j.Slf4j;
+
+@RestControllerAdvice
+@Slf4j
+public class UserExceptionHandler extends ResponseEntityExceptionHandler {
+	
+	@ExceptionHandler(UserNotFoundException.class)
+	public ResponseEntity<ExceptionResponse> handleUserNotFoundException(UserNotFoundException ex, WebRequest request) {
+		ExceptionResponse exceptionResponse = new ExceptionResponse(LocalDate.now(), "User not found!",
+				request.getDescription(false), "Not Found");
+		log.error("User not found!\n" + ex.getMessage());
+		return new ResponseEntity<>(exceptionResponse, HttpStatus.NOT_FOUND);
+	}
+	
+	@ExceptionHandler(ResourceNotFoundException.class)
+	public ResponseEntity<ExceptionResponse> handleCouponNotFoundException(ResourceNotFoundException ex, WebRequest request) {
+		ExceptionResponse exceptionResponse = new ExceptionResponse(LocalDate.now(), ex.getMessage(),
+				request.getDescription(false), "Not Found");
+		log.error("Coupon not found!\n" + ex.getMessage());
+		return new ResponseEntity<>(exceptionResponse, HttpStatus.NOT_FOUND);
+	}
+	
+	@ExceptionHandler(UserAlreadyExistsException.class)
+	public ResponseEntity<ExceptionResponse> handleUserAlreadyExists(UserAlreadyExistsException ex, WebRequest request) {
+		ExceptionResponse exceptionResponse = new ExceptionResponse(LocalDate.now(), "Username already exists!",
+				request.getDescription(false), "Already Exists");
+		log.error("User already exists!\n" + ex.getMessage());
+		return new ResponseEntity<>(exceptionResponse, HttpStatus.NOT_ACCEPTABLE);
+	}
+	
+	@ExceptionHandler(ResourceAlreadyExistsException.class)
+	public ResponseEntity<ExceptionResponse> handleCouponAlreadyExists(ResourceAlreadyExistsException ex, WebRequest request) {
+		ExceptionResponse exceptionResponse = new ExceptionResponse(LocalDate.now(), ex.getMessage(),
+				request.getDescription(false), "Already Exists");
+		log.error("Coupon already exists!\n" + ex.getMessage());
+		return new ResponseEntity<>(exceptionResponse, HttpStatus.NOT_ACCEPTABLE);
+	}
+	
+	@ExceptionHandler(ValidationFailedException.class)
+	public ResponseEntity<ExceptionResponse> handleValidationFailure(ValidationFailedException ex, WebRequest request) {
+		ExceptionResponse exceptionResponse = new ExceptionResponse(LocalDate.now(), ex.getMessage(),
+				request.getDescription(false), "Validation Failed");
+		log.error("Validation Failed!\n" + ex.getMessage());
+		return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
+	}
+	
+//	@ExceptionHandler(DuplicateKeyException.class)
+//	public ResponseEntity<ExceptionResponse> handleDuplicateValueFailure(DuplicateKeyException ex, WebRequest request) {
+//		ExceptionResponse exceptionResponse = new ExceptionResponse(LocalDate.now(), ex.getMessage(),
+//				request.getDescription(false), "Duplicate Value");
+//		log.error("Duplicate Value!\n" + ex.getMessage());
+//		return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
+//	}
+	
+	@ExceptionHandler(DuplicateKeyException.class)
+	public ResponseEntity<ExceptionResponse> handleDuplicateValueFailure(DuplicateKeyException ex, WebRequest request) {
+	    // Extract the index name and duplicate key from the exception message
+	    String exceptionMessage = ex.getMessage();
+	    String indexName = extractIndexName(exceptionMessage);
+	    String duplicateKeyValue = extractDuplicateKeyValue(exceptionMessage);
+
+	    // Create a custom response message
+	    String customMessage = "Duplicate Value for index: " + indexName + ", Key: " + duplicateKeyValue;
+
+	    ExceptionResponse exceptionResponse = new ExceptionResponse(LocalDate.now(), customMessage,
+	            request.getDescription(false), "Duplicate Value");
+
+	    log.error("Duplicate Value!\n" + customMessage);
+	    return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
+	}
+
+	// Helper method to extract the index name from the exception message
+	private String extractIndexName(String exceptionMessage) {
+	    int indexNameStart = exceptionMessage.indexOf("index: ");
+	    if (indexNameStart >= 0) {
+	        int indexNameEnd = exceptionMessage.indexOf(" dup key");
+	        if (indexNameEnd > indexNameStart) {
+	            return exceptionMessage.substring(indexNameStart + 7, indexNameEnd).trim();
+	        }
+	    }
+	    return "Unknown";
+	}
+
+	// Helper method to extract the duplicate key value from the exception message
+	private String extractDuplicateKeyValue(String exceptionMessage) {
+	    int duplicateKeyStart = exceptionMessage.indexOf("dup key: {");
+	    if (duplicateKeyStart >= 0) {
+	        int duplicateKeyEnd = exceptionMessage.indexOf(" }");
+	        if (duplicateKeyEnd > duplicateKeyStart) {
+	            return exceptionMessage.substring(duplicateKeyStart + 10, duplicateKeyEnd).trim();
+	        }
+	    }
+	    return "Unknown";
+	}
+	
+	@ExceptionHandler(UsernameNotFoundException.class)
+	public ResponseEntity<ExceptionResponse> handleUsernameNotFoundException(UsernameNotFoundException ex, WebRequest request) {
+		ExceptionResponse exceptionResponse = new ExceptionResponse(LocalDate.now(), ex.getMessage(),
+				request.getDescription(false), "Username not found! Bad Credentials");
+		log.error("Username not found! Bad Credentials", ex.getMessage());
+//        log.error(ex.getMessage());
+		return new ResponseEntity<>(exceptionResponse, HttpStatus.NOT_FOUND);
+	}
+	
+	@ExceptionHandler(Exception.class)
+	public ResponseEntity<ExceptionResponse> handleAllExceptions(Exception ex, WebRequest request) {
+		ExceptionResponse exceptionResponse = new ExceptionResponse(LocalDate.now(), ex.getMessage(),
+				request.getDescription(false), "Internal Server Error");
+		log.error("An exception occurred:", ex);
+//        log.error(ex.getMessage());
+		return new ResponseEntity<>(exceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+	
+	@Override
+	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
+			HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+		StringBuilder details = new StringBuilder();
+		for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+			details.append(error.getField()).append(": ").append(error.getDefaultMessage()).append(". ");
+		}
+		ExceptionResponse exceptionResponse = new ExceptionResponse(LocalDate.now(), "Validation fails",
+				details.toString(), "Bad Request");
+		log.error("Validation fails:", ex);
+//        log.error(ex.getMessage());
+
+		return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
+	}
+	
+}

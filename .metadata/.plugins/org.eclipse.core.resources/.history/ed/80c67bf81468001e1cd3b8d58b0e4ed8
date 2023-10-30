@@ -1,0 +1,66 @@
+package com.coupond.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.coupond.document.Coupon;
+import com.coupond.exception.CouponAlreadyExists;
+import com.coupond.exception.CouponNotFound;
+import com.coupond.service.ICouponService;
+
+import lombok.extern.slf4j.Slf4j;
+
+@RestController
+@Slf4j
+@RequestMapping("/coupon")
+public class CouponController {
+	
+	@Autowired
+	ICouponService couponService;
+
+	@PostMapping("/addCoupon")
+	public ResponseEntity<Coupon> addCoupon(@RequestBody Coupon coupon) throws CouponAlreadyExists {
+		return new ResponseEntity<Coupon>(couponService.addCoupon(coupon), HttpStatus.OK);
+	}
+	
+	@DeleteMapping("/deleteCouponByCode/{code}")
+	public ResponseEntity<String> deleteCouponByCode(@PathVariable("code") String couponCode) throws CouponNotFound {
+		return new ResponseEntity<>(couponService.deleteCouponByCouponCode(couponCode), HttpStatus.OK);
+	}
+	
+	@DeleteMapping("/deleteCouponById/{id}")
+	public ResponseEntity<String> deleteCouponById(@PathVariable Integer id) throws CouponNotFound {
+		return new ResponseEntity<>(couponService.deleteCouponById(id), HttpStatus.OK);
+	}
+	
+	@PutMapping("/updateCoupon")
+	public ResponseEntity<Coupon> updateCoupon(@RequestBody Coupon coupon) throws CouponNotFound {
+		return new ResponseEntity<>(couponService.updateCoupon(coupon), HttpStatus.OK);
+	}
+	
+	@GetMapping("/getCouponById/{id}")
+	public ResponseEntity<Coupon> getCouponById(@PathVariable Integer id) throws CouponNotFound {
+		return new ResponseEntity<>(couponService.getCouponById(id), HttpStatus.OK);
+	}
+	
+	@GetMapping("/getCouponByCode/{code}")
+	public ResponseEntity<Coupon> getCouponByCouponCode(@PathVariable("code") String couponCode) throws CouponNotFound {
+		return ResponseEntity<Coupon>(couponService.getCouponByCouponCode(couponCode), HttpStatus.OK);
+	}
+	
+	public ResponseEntity<List<Coupon>> getAllCoupons() {
+		
+	}
+	
+}

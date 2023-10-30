@@ -1,0 +1,243 @@
+package com.coupond.service;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
+
+import com.coupond.client.CouponClient;
+import com.coupond.client.EmailClient;
+import com.coupond.dto.CouponDto;
+import com.coupond.dto.LoginDto;
+import com.coupond.dto.RegisterDto;
+import com.coupond.dto.UpdateUserDto;
+import com.coupond.dto.UserDto;
+import com.coupond.entity.User;
+import com.coupond.exception.ResourceNotFoundException;
+import com.coupond.exception.UserAlreadyExistsException;
+import com.coupond.exception.UserNotFoundException;
+import com.coupond.jwt.JwtUtility;
+import com.coupond.repository.SequenceRepository;
+import com.coupond.repository.UserRepository;
+import com.coupond.response.JSONResponse;
+import com.coupond.util.SequenceGeneratorService;
+
+import jakarta.validation.Valid;
+
+@Service
+public class UserServiceImpl implements UserService {
+	
+	@Autowired
+	UserRepository userRepo;
+	
+	@Autowired
+	PasswordEncoder passwordEncoder;
+	
+	@Autowired
+	SequenceRepository seqRepo;
+	
+	@Autowired
+	SequenceGeneratorService seqGen;
+	
+	@Autowired
+	CouponClient couponClient;
+	
+	@Autowired
+	EmailClient emailClient;
+	
+	@Autowired
+	private DaoAuthenticationProvider authenticationManager;
+	
+	@Autowired
+	private JwtUtility jwtUtility;
+
+	@Override
+	public UserDto registerUser(RegisterDto newUser) throws UserAlreadyExistsException {
+		Optional<User> opUser = userRepo.findByUsername(newUser.getUsername());
+		if(opUser.isPresent()) {
+			throw new UserAlreadyExistsException();
+		}
+		int nextSequence = seqGen.generateSequence(User.SEQUENCE_NAME);
+
+	    // Create the new user with the generated sequence
+	    User user = new User();
+	    user.setUserId(nextSequence);
+		user.setUsername(newUser.getUsername());
+		user.setEmail(newUser.getEmail());
+		user.setPhoneNumber(newUser.getPhoneNumber());
+		user.setPassword(passwordEncoder.encode(newUser.getPassword()));
+		user.setRole("ROLE_USER");
+		user.setListOfCoupons(new ArrayList<>());
+		User savedUser = userRepo.save(user);
+		String subject = "Welcome to Coupond - Your Ultimate Savings Partner!";
+		String body = "Dear " + savedUser.getUsername() + ",\r\n"
+				+ "\r\n" +
+				"We are excited to welcome you to Coupond, your new go-to destination for exclusive deals and discounts from a wide array of platforms and stores! Get ready to embark on a journey of savings, as we bring you the best coupons and offers for your favorite brands, including Amazon, Flipkart, Baskin Robbins, and many more.\n\n" +
+                "What is Coupond?\n\n" +
+                "Coupond is your ultimate savings partner, dedicated to helping you make the most out of your shopping experiences. Whether you're an online shopaholic, a foodie, or simply someone looking to save a few extra bucks, our platform is designed to cater to your diverse needs.\n\n" +
+                "Why Choose Coupond?\n\n" +
+                "- One-Stop Savings Hub: At Coupond, we've curated a vast collection of coupons and offers from a wide range of stores and platforms. You'll find everything you need, all in one place.\n" +
+                "- Real-Time Updates: Our dedicated team tirelessly works to keep you updated with the latest and greatest deals. Don't miss out on limited-time offers and flash sales.\n" +
+                "- User-Friendly Experience: We've designed our platform with you in mind. It's easy to navigate, ensuring a seamless and enjoyable user experience.\n\n" +
+                "How It Works\n\n" +
+                "1. Browse: Explore our diverse categories and discover the deals that pique your interest.\n" +
+                "2. Select: Choose your favorite coupon or offer and click to reveal the details.\n" +
+                "3. Shop & Save: Complete your purchase on the respective platform while enjoying significant savings.\n" +
+                "4. Share the Love: Loved your experience? Don't forget to share the good news with friends and family.\n\n" +
+                "Get Started Today\n\n" +
+                "We're thrilled to have you join the Coupond community, where every day is a shopping adventure filled with opportunities to save big. To get started, simply log in with your registered account and begin exploring the world of incredible deals and discounts.\n\n" +
+                "Thank you for choosing Coupond as your savings companion. We look forward to helping you save money while you shop to your heart's content. If you have any questions or need assistance, feel free to reach out to our support team. We're here to make your shopping experience extraordinary.\n\n" +
+                "Happy shopping and even happier savings!\n\n" +
+                "Warm regards,\n\n" +
+                "Anirudh Barman\n" +
+                "India CEO\n" +
+                "Coupond Team";
+		emailClient.sendMail(savedUser.getEmail(), subject, body);
+		
+		return new UserDto(savedUser.getUserId(), savedUser.getUsername(), savedUser.getEmail(), savedUser.getRole(), savedUser.getPhoneNumber(), new ArrayList<>());
+	}
+	
+	@Override
+	public UserDto registerAdmin(RegisterDto newUser) throws UserAlreadyExistsException {
+		Optional<User> opUser = userRepo.findByUsername(newUser.getUsername());
+		if(opUser.isPresent()) {
+			throw new UserAlreadyExistsException();
+		}
+		User user = new User();
+		user.setUserId(seqGen.generateSequence(user.SEQUENCE_NAME));
+		user.setUsername(newUser.getUsername());
+		user.setEmail(newUser.getEmail());
+		user.setPhoneNumber(newUser.getPhoneNumber());
+		user.setPassword(passwordEncoder.encode(newUser.getPassword()));
+		user.setRole("ROLE_ADMIN");
+		User savedUser = userRepo.save(user);
+		return new UserDto(savedUser.getUserId(), savedUser.getUsername(), savedUser.getEmail(), savedUser.getRole(), savedUser.getPhoneNumber(), new ArrayList<>());
+	}
+
+	@Override
+	public List<UserDto> getAllUsers() {
+		List<User> users = userRepo.findAll();
+		List<UserDto> udtos = new ArrayList<>();
+		for(User user : users) {
+			List<String> strs = user.getListOfCoupons();
+			List<CouponDto> coupons = new ArrayList<>();
+			for(String code : strs) {
+				coupons.add(couponClient.getCouponByCouponCode(code).getBody());
+			}
+			udtos.add(new UserDto(user.getUserId(), user.getUsername(), user.getEmail(), user.getRole(), user.getPhoneNumber(), coupons));
+		}
+		return udtos;
+	}
+
+	@Override
+	public UserDto getUserByUsername(String username) throws UserNotFoundException {
+		User user = userRepo.findByUsername(username).orElseThrow(UserNotFoundException::new);
+		List<CouponDto> coupons = new ArrayList<>();
+		for(String code : user.getListOfCoupons()) {
+			coupons.add(couponClient.getCouponByCouponCode(code).getBody());
+		}
+		return new UserDto(user.getUserId(), user.getUsername(), user.getEmail(), user.getRole(), user.getPhoneNumber(), coupons);
+	}
+
+	@Override
+	public UserDto getUserById(int id) throws UserNotFoundException {
+		User user = userRepo.findById(id).orElseThrow(UserNotFoundException::new);
+		List<CouponDto> coupons = new ArrayList<>();
+		for(String code : user.getListOfCoupons()) {
+			coupons.add(couponClient.getCouponByCouponCode(code).getBody());
+		}
+		return new UserDto(user.getUserId(), user.getUsername(), user.getEmail(), user.getRole(), user.getPhoneNumber(), coupons);
+	}
+
+	@Override
+	public UserDto updateUser(UpdateUserDto user) throws UserNotFoundException {
+		User foundUser = userRepo.findByUsername(user.getUsername()).orElseThrow(UserNotFoundException::new);
+		foundUser.setEmail(user.getEmail());
+		foundUser.setPhoneNumber(user.getPhoneNumber());
+		foundUser.setUsername(user.getUsername());
+		User updatedUser = userRepo.save(foundUser);
+		List<CouponDto> coupons = new ArrayList<>();
+		for(String code : updatedUser.getListOfCoupons()) {
+			coupons.add(couponClient.getCouponByCouponCode(code).getBody());
+		}
+		return new UserDto(updatedUser.getUserId(), updatedUser.getUsername(), updatedUser.getEmail(), updatedUser.getRole(), updatedUser.getPhoneNumber(), coupons);
+	}
+
+	@Override
+	public String deleteUserByUsername(String username) throws UserNotFoundException {
+		userRepo.findByUsername(username).orElseThrow(UserNotFoundException::new);
+		userRepo.deleteByUsername(username);
+		return "User with username: " + username + " is deleted successfully!";
+	}
+
+	@Override
+	public String deleteUserById(int id) throws UserNotFoundException {
+		userRepo.findById(id).orElseThrow(UserNotFoundException::new);
+		userRepo.deleteById(id);
+		return "User with Id: " + id + " is deleted successfully!";
+	}
+
+	@Override
+	public List<String> getCouponsByUserId(int id) throws UserNotFoundException {
+		return userRepo.findById(id).orElseThrow(UserNotFoundException::new).getListOfCoupons();
+	}
+
+	@Override
+	public List<CouponDto> buyCoupons(String username, List<String> listOfCoupons) throws UserNotFoundException, ResourceNotFoundException {
+		User user = userRepo.findByUsername(username).orElseThrow(UserNotFoundException::new);
+		
+		List<String> previousCoupons = user.getListOfCoupons();
+		
+		for(String code : listOfCoupons) {
+			previousCoupons.add(code);
+		}
+		user.setListOfCoupons(previousCoupons);
+		User updatedUser = userRepo.save(user);
+		
+		List<CouponDto> list = new ArrayList<>();
+		for(String code : updatedUser.getListOfCoupons()) {
+			CouponDto cdto = couponClient.getCouponByCouponCode(code).getBody();
+			list.add(cdto);
+		}
+		String subject = "Coupond - Thank you for your purchase!";
+		StringBuilder body = new StringBuilder();
+		body.append("Dear " + user.getUsername() + ", Thank you for your purchase\n\n");
+		body.append("You have bought " + list.size() + " coupons. They are:\n");
+		double totalPrice = 0;
+		for(CouponDto cdto : list) {
+			totalPrice += cdto.getPrice();
+			body.append("-> " + cdto.getCouponCode() + " - Rs." + cdto.getPrice() + "\n");
+		}
+		body.append("\nFor a total price of Rs." + totalPrice);
+		body.append("\nThank you and Enjoy,\nCoupond Team");
+		emailClient.sendMail(updatedUser.getEmail(), subject, body.toString());
+		return list;
+	}
+
+	public ResponseEntity<?> loginUser(LoginDto loginRequest) {
+
+		Authentication authentication=authenticationManager.authenticate(
+				new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),loginRequest.getPassword())
+				);
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+		UserDetailsImpl userDetails=(UserDetailsImpl) authentication.getPrincipal();
+		String jwtToken=jwtUtility.generateToken(authentication);
+		Collection<? extends GrantedAuthority> authorities=userDetails.getAuthorities();
+		List<String> li=authorities.stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+		JSONResponse jsonResponse=new JSONResponse(jwtToken,userDetails.getUsername(),li);
+		return ResponseEntity.ok(jsonResponse);		
+	}
+	
+}

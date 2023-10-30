@@ -1,0 +1,18 @@
+
+|
+java:S1192)"HDefine a constant instead of duplicating this literal "message" 4 times.(ßŠËÚûÿÿÿÿHœRCRITICALZ
+CODE_SMELL
+Š	java:S120"ZRename this package name to match the regular expression '^[a-z_]+(\.[a-z_][a-z0-9_]*)*$'.(ô…‘—ÿÿÿÿÿH¡RMINORZ
+CODE_SMELL
+a
+java:S1874&"0Remove this use of "asReader"; it is deprecated.(î–¼„üÿÿÿÿH¢RMINORZ
+CODE_SMELL
+a
+java:S1874;"0Remove this use of "asReader"; it is deprecated.(î–¼„üÿÿÿÿH£RMINORZ
+CODE_SMELL
+f
+java:S1128"5Remove this unused import 'java.nio.charset.Charset'.(ü¶ØŸýÿÿÿÿH¤RMINORZ
+CODE_SMELL
+m
+java:S1128"ARemove this unused import 'org.springframework.util.StreamUtils'.(Ò‰ØäH¦RMINORZ
+CODE_SMELL

@@ -1,0 +1,11 @@
+
+Z
+java:S2201¸"/The return value of "orElseThrow" must be used.(ÏÿæŠüÿÿÿÿHòRMAJORZBUG
+f
+java:S2209q"5Change this instance-reference to a static reference.(”Öª¸şÿÿÿÿHïRMAJORZ
+CODE_SMELL
+‹
+java:S6204ò"RReplace this usage of 'Stream.collect(Collectors.toList())' with 'Stream.toList()'(‹³¸şÿÿÿÿ8Ëù­Õ¶1HÄRMAJORZ
+CODE_SMELL
+Z
+java:S2201¿"/The return value of "orElseThrow" must be used.(’äÁÈüÿÿÿÿHñRMAJORZBUG

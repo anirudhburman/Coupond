@@ -1,0 +1,25 @@
+server:
+  port: 9091
+  
+spring:
+  application:
+    name: Coupon-Service
+    
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: coupondb
+
+eureka:
+  instance:
+    hostname: localhost
+    
+logging:
+  level:
+    org:
+      springframework:
+        data:
+          mongodb:
+            core:
+              MongoTemplate: DEBUG

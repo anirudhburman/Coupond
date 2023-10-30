@@ -1,0 +1,49 @@
+package com.coupond.service;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.RequestBody;
+
+import com.coupond.dto.CouponDto;
+import com.coupond.dto.LoginDto;
+import com.coupond.dto.RegisterDto;
+import com.coupond.dto.UpdateUserDto;
+import com.coupond.dto.UserDto;
+import com.coupond.exception.ResourceNotFoundException;
+import com.coupond.exception.UserAlreadyExistsException;
+import com.coupond.exception.UserNotFoundException;
+import com.coupond.response.JSONResponse;
+
+import jakarta.validation.Valid;
+
+public interface UserService {
+	
+	public ResponseEntity<?> loginUser(@Valid @RequestBody LoginDto loginRequest);
+
+	UserDto registerUser(RegisterDto user) throws UserAlreadyExistsException;
+	
+	UserDto registerAdmin(RegisterDto user) throws UserAlreadyExistsException;
+	
+	List<UserDto> getAllUsers();
+	
+	UserDto getUserByUsername(String username) throws UserNotFoundException;
+	
+	UserDto getUserById(int id) throws UserNotFoundException;
+	
+	UserDto updateUser(UpdateUserDto user) throws UserNotFoundException;
+	
+	String deleteUserByUsername(String username) throws UserNotFoundException;
+	
+	String deleteUserById(int id) throws UserNotFoundException;
+	
+	List<String> getCouponsByUserId(int id) throws UserNotFoundException;
+	
+	List<CouponDto> buyCoupons(String username, List<String> listOfCoupons) throws UserNotFoundException, ResourceNotFoundException;
+}

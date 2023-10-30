@@ -1,0 +1,37 @@
+
+y
+java:S5738-"HRemove this call to a deprecated method, it has been marked for removal.(ÛüïÓýÿÿÿÿH´RMAJORZ
+CODE_SMELL
+y
+java:S57383"HRemove this call to a deprecated method, it has been marked for removal.(ÅúßµûÿÿÿÿH·RMAJORZ
+CODE_SMELL
+y
+java:S57385"HRemove this call to a deprecated method, it has been marked for removal.(ÅúßµûÿÿÿÿH¹RMAJORZ
+CODE_SMELL
+ƒ
+java:S3305"OInject this field value directly into "doFilter", the only method that uses it.(×Ò®«ýÿÿÿÿH±RCRITICALZ
+CODE_SMELL
+‰
+java:S1128"]Remove this unused import 'org.springframework.security.crypto.password.NoOpPasswordEncoder'.(ƒ»ÅÅHºRMINORZ
+CODE_SMELL
+t
+java:S57380"HRemove this call to a deprecated method, it has been marked for removal.(ÏðÅôH¶RMAJORZ
+CODE_SMELL
+~
+java:S3305"OInject this field value directly into "doFilter", the only method that uses it.(ÏùªØH°RCRITICALZ
+CODE_SMELL
+y
+java:S5738/"HRemove this call to a deprecated method, it has been marked for removal.(ÅúßµûÿÿÿÿHµRMAJORZ
+CODE_SMELL
+s
+java:S5738,"HRemove this call to a deprecated method, it has been marked for removal.(ßÒ£EH³RMAJORZ
+CODE_SMELL
+t
+java:S57384"HRemove this call to a deprecated method, it has been marked for removal.(èúÞ«H¸RMAJORZ
+CODE_SMELL
+n
+java:S1874"BRemove this use of "EnableGlobalMethodSecurity"; it is deprecated.(ö­ê×H²RMINORZ
+CODE_SMELL
+‡
+java:S3305"SInject this field value directly into "authenticate", the only method that uses it.(ñÊ®¤ùÿÿÿÿH¯RCRITICALZ
+CODE_SMELL
