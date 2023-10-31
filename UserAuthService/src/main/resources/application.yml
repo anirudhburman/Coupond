@@ -4,6 +4,9 @@ server:
 spring:
   application:
     name: User-Auth-Service
+#  devtools:
+#    livereload:
+#      port: 35730
     
   data:
     mongodb:
@@ -13,6 +16,7 @@ spring:
 
 eureka:
   instance:
+    prefer-ip-address: true
     hostname: localhost
     
 logging:

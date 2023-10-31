@@ -1,0 +1,120 @@
+package com.coupond.service;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.Optional;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import com.coupond.client.CouponClient;
+import com.coupond.client.EmailClient;
+import com.coupond.dto.RegisterDto;
+import com.coupond.dto.UserDto;
+import com.coupond.entity.User;
+import com.coupond.exception.UserAlreadyExistsException;
+import com.coupond.jwt.JwtUtility;
+import com.coupond.repository.SequenceRepository;
+import com.coupond.repository.UserRepository;
+import com.coupond.util.SequenceGeneratorService;
+
+@ExtendWith(MockitoExtension.class)
+public class UserServiceImplTests {
+
+    @InjectMocks
+    private UserServiceImpl userService;
+
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private SequenceRepository sequenceRepository;
+
+    @Mock
+    private SequenceGeneratorService sequenceGeneratorService;
+
+    @Mock
+    private CouponClient couponClient;
+
+    @Mock
+    private EmailClient emailClient;
+
+    @Mock
+    private DaoAuthenticationProvider authenticationManager;
+
+    @Mock
+    private JwtUtility jwtUtility;
+
+    @BeforeEach
+    public void setUp() {
+        // Set up any additional configuration or mocks needed before tests
+    }
+
+    @Test
+    public void testRegisterUser_ValidUserRegistration() throws UserAlreadyExistsException {
+        // Arrange
+        RegisterDto registerDto = new RegisterDto("newuser", "password123", "newuser@example.com", "1234567890");
+        User user = new User();
+        user.setUserId(1);
+        user.setUsername(registerDto.getUsername());
+        user.setEmail(registerDto.getEmail());
+        user.setPhoneNumber(registerDto.getPhoneNumber());
+        user.setPassword("encoded_password");
+        user.setRole("ROLE_USER");
+
+        when(userRepository.findByUsername(registerDto.getUsername())).thenReturn(Optional.empty());
+        when(sequenceGeneratorService.generateSequence(User.SEQUENCE_NAME)).thenReturn(1);
+        when(passwordEncoder.encode(registerDto.getPassword())).thenReturn("encoded_password");
+        when(userRepository.save(any(User.class))).thenReturn(user);
+        when(emailClient.sendMail(anyString(), anyString(), anyString()))
+        .thenReturn("Mail Send Successfully");
+
+        // Act
+        UserDto result = userService.registerUser(registerDto);
+
+        // Assert
+        assertEquals(1, result.getUserId());
+        assertEquals(registerDto.getUsername(), result.getUsername());
+        assertEquals(registerDto.getEmail(), result.getEmail());
+        assertEquals("USER", result.getRole());
+        assertEquals(registerDto.getPhoneNumber(), result.getPhoneNumber());
+        assertEquals(new ArrayList<>(), result.getListOfCoupons());
+    }
+
+    @Test
+    public void testRegisterUser_UserAlreadyExists() {
+        // Arrange
+        RegisterDto registerDto = new RegisterDto("existinguser", "password123", "existing@example.com", "1234567890");
+        User existingUser = new User();
+        existingUser.setUserId(1);
+        existingUser.setUsername(registerDto.getUsername());
+        existingUser.setEmail(registerDto.getEmail());
+        existingUser.setPhoneNumber(registerDto.getPhoneNumber());
+        existingUser.setPassword("encoded_password");
+        existingUser.setRole("ROLE_USER");
+
+        when(userRepository.findByUsername(registerDto.getUsername())).thenReturn(Optional.of(existingUser));
+
+        // Act and Assert
+        assertThrows(UserAlreadyExistsException.class, () -> userService.registerUser(registerDto));
+    }
+
+    // Write similar test cases for the other methods in UserServiceImpl
+
+}
+

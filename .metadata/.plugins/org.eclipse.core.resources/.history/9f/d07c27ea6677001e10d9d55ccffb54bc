@@ -1,0 +1,179 @@
+package com.coupond.controller;
+
+import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+import com.coupond.dto.RegisterDto;
+import com.coupond.dto.UserDto;
+import com.coupond.service.UserService;
+
+@ExtendWith(MockitoExtension.class)
+//@WebMvcTest(UserController.class)
+@SpringBootTest
+public class UserControllerTests {
+
+    @InjectMocks
+    private UserController userController;
+
+    @Mock
+    private UserService userService;
+
+    @Test
+    public void testRegisterUser_ValidUserRegistration() throws Exception {
+        // Arrange
+        RegisterDto registerDto = new RegisterDto("newuser", "password123", "newuser@example.com", "1234567890");
+        UserDto userDto = new UserDto(1, "newuser", "newuser@example.com", "USER", "1234567890");
+
+        when(userService.registerUser(registerDto)).thenReturn(userDto);
+
+        // Act
+        ResponseEntity<UserDto> response = userController.registerUser(registerDto);
+
+        // Assert
+        Assertions.assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        Assertions.assertEquals(userDto, response.getBody());
+    }
+
+    @Test
+    public void testRegisterAdmin_ValidAdminRegistration() throws Exception {
+        // Arrange
+        RegisterDto registerDto = new RegisterDto("adminuser", "password123", "admin@example.com", "1234567890");
+        UserDto adminDto = new UserDto(2, "adminuser", "admin@example.com", "ADMIN", "1234567890");
+
+        when(userService.registerAdmin(registerDto)).thenReturn(adminDto);
+
+        // Act
+        ResponseEntity<UserDto> response = userController.registerAdmin(registerDto);
+
+        // Assert
+        Assertions.assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        Assertions.assertEquals(adminDto, response.getBody());
+    }
+
+    @Test
+    public void testGetAllUsers_Valid() throws Exception {
+        // Arrange
+        List<UserDto> userList = new ArrayList<>();
+        // Add userDto objects to the list
+
+        when(userService.getAllUsers()).thenReturn(userList);
+
+        // Act
+        ResponseEntity<List<UserDto> > response = userController.getAllUsers();
+
+        // Assert
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assertions.assertEquals(userList, response.getBody());
+    }
+
+    @Test
+    public void testGetUserByUsername_ValidUsername() throws Exception {
+        // Arrange
+        String username = "existingUser";
+        UserDto userDto = new UserDto(1, username, "user@example.com", "USER", "1234567890");
+
+        when(userService.getUserByUsername(username)).thenReturn(userDto);
+
+        // Act
+        ResponseEntity<UserDto> response = userController.getUserByUsername(username);
+
+        // Assert
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assertions.assertEquals(userDto, response.getBody());
+    }
+
+    @Test
+    public void testGetUserById_ValidUserId() throws Exception {
+        // Arrange
+        int userId = 1;
+        UserDto userDto = new UserDto(userId, "existingUser", "user@example.com", "USER", "1234567890");
+
+        when(userService.getUserById(userId)).thenReturn(userDto);
+
+        // Act
+        ResponseEntity<UserDto> response = userController.getUserById(userId);
+
+        // Assert
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assertions.assertEquals(userDto, response.getBody());
+    }
+
+    @Test
+    public void testUpdateUser_ValidUserData() throws Exception {
+        // Arrange
+        UpdateUserDto updateUserDto = new UpdateUserDto(1, "newUsername", "newUser@example.com", "1234567890");
+        UserDto updatedUserDto = new UserDto(1, "newUsername", "newUser@example.com", "USER", "1234567890");
+
+        when(userService.updateUser(updateUserDto)).thenReturn(updatedUserDto);
+
+        // Act
+        ResponseEntity<UserDto> response = userController.updateUser(updateUserDto);
+
+        // Assert
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assertions.assertEquals(updatedUserDto, response.getBody());
+    }
+
+    @Test
+    public void testDeleteUserByUsername_ValidUsername() throws Exception {
+        // Arrange
+        String username = "existingUser";
+        String expectedResponse = "User deleted successfully";
+
+        when(userService.deleteUserByUsername(username)).thenReturn(expectedResponse);
+
+        // Act
+        ResponseEntity<String> response = userController.deleteUserByUsername(username);
+
+        // Assert
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assertions.assertEquals(expectedResponse, response.getBody());
+    }
+
+    @Test
+    public void testDeleteUserById_ValidUserId() throws Exception {
+        // Arrange
+        int userId = 1;
+        String expectedResponse = "User deleted successfully";
+
+        when(userService.deleteUserById(userId)).thenReturn(expectedResponse);
+
+        // Act
+        ResponseEntity<String> response = userController.deleteUserById(userId);
+
+        // Assert
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assertions.assertEquals(expectedResponse, response.getBody());
+    }
+
+    @Test
+    public void testGetCouponsByUserId_ValidUserId() throws Exception {
+        // Arrange
+        int userId = 1;
+        List<String> couponList = new ArrayList<>();
+        couponList.add("Coupon1");
+        couponList.add("Coupon2");
+
+        when(userService.getCouponsByUserId(userId)).thenReturn(couponList);
+
+        // Act
+        ResponseEntity<List<String>> response = userController.getCouponsByUserId(userId);
+
+        // Assert
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assertions.assertEquals(couponList, response.getBody());
+    }
+
+}

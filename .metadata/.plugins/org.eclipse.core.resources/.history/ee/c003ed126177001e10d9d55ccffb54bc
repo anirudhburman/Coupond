@@ -1,0 +1,51 @@
+package com.coupond.controller;
+
+import static org.mockito.Mockito.when;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import com.coupond.dto.RegisterDto;
+import com.coupond.dto.UserDto;
+import com.coupond.service.UserService;
+
+@ExtendWith(MockitoExtension.class)
+@WebMvcTest(UserController.class)
+public class UserControllerTests {
+	
+	@Autowired
+    private MockMvc mockMvc;
+
+    @Mock
+    private UserService userService;
+
+    @InjectMocks
+    private UserController userController;
+
+	@Test
+	public void testRegisterUser_ValidUserRegistration() throws Exception {
+	    RegisterDto registerDto = new RegisterDto("newuser", "password123");
+	    UserDto userDto = new UserDto("newuser", "New User", "newuser@example.com");
+
+	    when(userService.registerUser(registerDto)).thenReturn(userDto);
+
+	    mockMvc.perform(MockMvcRequestBuilders.post("/user/registerUser")
+	            .contentType(MediaType.APPLICATION_JSON)
+	            .content("{\"username\":\"newuser\",\"password\":\"password123\"}")
+	            .accept(MediaType.APPLICATION_JSON))
+	            .andExpect(MockMvcResultMatchers.status().isCreated())
+	            .andExpect(MockMvcResultMatchers.jsonPath("$.username").value("newuser"))
+	            .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("New User"))
+	            .andExpect(MockMvcResultMatchers.jsonPath("$.email").value("newuser@example.com"));
+	}
+
+}

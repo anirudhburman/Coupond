@@ -1,0 +1,5 @@
+package com.coupond.service;
+
+public class UserServiceImplTests {
+
+}

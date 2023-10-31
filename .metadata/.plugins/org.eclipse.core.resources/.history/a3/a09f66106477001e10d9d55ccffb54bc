@@ -1,0 +1,53 @@
+package com.coupond.controller;
+
+import static org.mockito.Mockito.when;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+
+import com.coupond.dto.RegisterDto;
+import com.coupond.dto.UserDto;
+import com.coupond.service.UserService;
+
+@ExtendWith(MockitoExtension.class)
+//@WebMvcTest(UserController.class)
+@SpringBootTest
+@AutoConfigureMockMvc
+class UserControllerTests {
+
+	@Autowired
+	private MockMvc mockMvc;
+
+	@Mock
+	private UserService userService;
+
+	@InjectMocks
+	private UserController userController;
+
+	@Test
+	void testRegisterUser_ValidUserRegistration() throws Exception {
+		RegisterDto registerDto = new RegisterDto("newuser", "password123", "newuser@example.com", "1234567890");
+		UserDto userDto = new UserDto(1, "newuser", "newuser@example.com", "USER", "1234567890", null);
+
+		when(userService.registerUser(registerDto)).thenReturn(userDto);
+
+		mockMvc.perform(MockMvcRequestBuilders.post("/user/registerUser").contentType(MediaType.APPLICATION_JSON)
+				.content(
+						"{\"username\":\"newuser\",\"password\":\"password123\",\"email\":\"newuser@example.com\",\"phoneNumber\":\"1234567890\"}")
+				.accept(MediaType.APPLICATION_JSON)).andExpect(MockMvcResultMatchers.status().isCreated())
+				.andExpect(MockMvcResultMatchers.jsonPath("$.userId").value(1))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.username").value("newuser"))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.email").value("newuser@example.com"))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.role").value("USER"))
+				.andExpect(MockMvcResultMatchers.jsonPath("$.phoneNumber").value("1234567890"));
+	}
+}
